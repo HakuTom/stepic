@@ -21,6 +21,10 @@ public class Main {
         LOGGER.log(Level.INFO,"im logging i {0}", i);
         LOGGER.severe("warningLog{0}");
         System.out.println("lol");
-    }
 
+        int[] arr = {1};
+        for(int j = 1; j < arr.length; j++){
+            System.out.println(arr[j]);
+        }
+    }
 }
