@@ -1,70 +1,26 @@
-import com.sun.deploy.xml.XMLable;
+import java.util.Arrays;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+
+import java.util.logging.Logger;
+import java.util.logging.XMLFormatter;
 
 /**
  * Created by dokgo on 16.10.16.
  */
 
 public class Main {
+    private static Logger LOGGER = Logger.getLogger(Main.class.getName());
+
     public static void main(String[] args) {
-        System.out.println("hi");
-    }
-}
-
-interface TextAnalyzer {
-    Label processText(String text);
-}
-
-enum Label {
-    SPAM, NEGATIVE_TEXT, TOO_LONG, OK
-}
-
-abstract class KeywordAnalyzer implements TextAnalyzer{
-    abstract protected String[] getKeywords();
-    abstract protected Label getLabel();
-
-    public Label processText(String text){
-        Label label = Label.OK;
-        for(String key : getKeywords()){
-            if ( text.contains(key) ) label = getLabel();
-        }
-        return label;
-    }
-}
-
-class SpamAnalyzer extends KeywordAnalyzer {
-    private String[] keywords;
-    public SpamAnalyzer(String [] keywords){
-        int length = keywords.length;
-        this.keywords = new String [length];
-
-        for(int i = 0; i < keywords.length; i++)
-            this.keywords[i] = keywords[i];
+        LOGGER.setUseParentHandlers(false);
+        ConsoleHandler h3 = new ConsoleHandler();
+        h3.setFormatter(new XMLFormatter());
+        LOGGER.log(Level.FINE,"started with{0}", Arrays.toString(args));
+        int i = 29;
+        LOGGER.log(Level.INFO,"im logging i {0}", i);
+        LOGGER.severe("warningLog{0}");
+        System.out.println("lol");
     }
 
-    protected String[] getKeywords(){
-        return keywords;
-    }
-    protected Label getLabel(){return Label.SPAM; }
-}
-
-class NegativeTextAnalyzer extends KeywordAnalyzer{
-    public NegativeTextAnalyzer(){}
-    protected String[] getKeywords(){return new String[]{":(", "=(", ":|"};}
-
-    protected Label getLabel(){
-        return Label.NEGATIVE_TEXT;
-    }
-}
-
-class TooLongTextAnalyzer implements TextAnalyzer{
-    private int maxLength;
-
-    public TooLongTextAnalyzer(int maxLength){
-        this.maxLength = maxLength;
-    }
-
-    public Label processText(String text){
-        if (text.length() > maxLength) return Label.TOO_LONG;
-        return Label.OK;
-    }
 }
