@@ -1,19 +1,11 @@
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.security.SecureRandom;
 import java.util.*;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-
-import java.util.logging.Logger;
-import java.util.logging.XMLFormatter;
-import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
-import java.util.zip.InflaterInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 
 /**
  * Created by dokgo on 16.10.16.
@@ -21,24 +13,63 @@ import java.util.zip.InflaterInputStream;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command("ls", "-lh")
-                .directory(new File("/home/dokgo/Git"))
-                .redirectInput(ProcessBuilder.Redirect.from(new File("/dev/null")))
-                .redirectOutput(ProcessBuilder.Redirect.PIPE)
-                .redirectError(ProcessBuilder.Redirect.INHERIT);
+        Client originalClient = new Client();
+        originalClient.setID(1);
+        originalClient.setName("Chuck Norris");
+        originalClient.setBirthDate(LocalDate.of(1940, 3, 10));
 
-        Process process = processBuilder.start();
-        try( BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream()))){
-            reader.lines().forEach(System.out::println);
+        Path path = Paths.get("object.bin");
+        try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(path))) {
+            oos.writeObject(originalClient);
         }
 
-        int exitValue = process.waitFor();
-        if (exitValue != 0) {
-            System.err.println("Subprocess terminated abmormaly");
+        Client deserializedClient;
+        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {
+            deserializedClient = (Client) ois.readObject();
         }
 
+        System.out.printf("%-15s %-30s\n", "ID", deserializedClient.getID());
+        System.out.printf("%-15s %-30s\n", "Name", deserializedClient.getName());
+        System.out.printf("%-15s %-30s\n", "Date of Birth", deserializedClient.getBirthDate());
+        System.out.printf("%-15s %-30s\n", "Age", deserializedClient.getAgeInYears());
+
+    }
+    public static class Client implements Serializable {
+        private long id;
+        private String name;
+        private LocalDate birthDate;
+        private transient int ageInYears;
+
+        public long getID() {
+            return id;
+        }
+
+        public void setID(long id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public LocalDate getBirthDate() {
+            return birthDate;
+        }
+
+        public void setBirthDate(LocalDate birthDate) {
+            this.birthDate = birthDate;
+        }
+
+        public int getAgeInYears() {
+            if (ageInYears == 0) {
+                ageInYears = birthDate.until(LocalDate.now()).getYears();
+            }
+            return ageInYears;
+        }
     }
 
 
