@@ -20,27 +20,25 @@ import java.util.zip.InflaterInputStream;
  */
 
 public class Main {
-    public static void main(String[] args) throws IOException {
-        String data = "-1e3\n" +
-                "18 .111 11bbb";
-        InputStream testInput = new ByteArrayInputStream( data.getBytes("UTF-8") );
-        System.setIn(testInput);
-        BufferedReader stream = new BufferedReader(new InputStreamReader(System.in));
-        String curr;
-        double sum = 0;
-        while((curr = stream.readLine()) != null){
-            String[] arr = curr.split("\\s");
-            for(String s : arr){
-                try {
-                    sum += Double.parseDouble(s);
-                }
-                catch (Exception e){
-                    sum += 0;
-                }
-            }
+    public static void main(String[] args) throws Exception {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.command("ls", "-lh")
+                .directory(new File("/home/dokgo/Git"))
+                .redirectInput(ProcessBuilder.Redirect.from(new File("/dev/null")))
+                .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                .redirectError(ProcessBuilder.Redirect.INHERIT);
 
+        Process process = processBuilder.start();
+        try( BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()))){
+            reader.lines().forEach(System.out::println);
         }
-        System.out.printf("%.6f", sum);
+
+        int exitValue = process.waitFor();
+        if (exitValue != 0) {
+            System.err.println("Subprocess terminated abmormaly");
+        }
+
     }
 
 
